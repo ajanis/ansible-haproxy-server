@@ -1,0 +1,6 @@
+---
+
+haproxy_distro_packages:
+  - haproxy
+  - nc # Used for the Ansible haproxy module
+  - rsyslog  # Used for local logging

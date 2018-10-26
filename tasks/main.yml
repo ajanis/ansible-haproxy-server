@@ -1,0 +1,30 @@
+---
+- name: Gather variables for each operating system
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
+    - "{{ ansible_distribution | lower }}.yml"
+    - "{{ ansible_os_family | lower }}-{{ ansible_distribution_version.split('.')[0] }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+  tags:
+    - always
+
+- name: debug test - hostvars
+  debug: var=hostvars[inventory_hostname]
+
+- include_tasks: haproxy_pre_install.yml
+  tags:
+    - haproxy_server-install
+
+- include_tasks: haproxy_install.yml
+  tags:
+    - haproxy_server-install
+
+- include_tasks: haproxy_ssl.yml
+  when: haproxy_ssl | bool
+  tags:
+    - haproxy_server-config
+
+- include_tasks: haproxy_post_install.yml
+  tags:
+    - haproxy_server-config

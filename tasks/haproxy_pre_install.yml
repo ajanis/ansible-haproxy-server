@@ -1,0 +1,75 @@
+---
+
+- name: Create the haproxy system group
+  group:
+    name: "haproxy"
+    state: "present"
+    system: "yes"
+  tags:
+    - haproxy-group
+
+- name: Create the haproxy system user
+  user:
+    name: "haproxy"
+    group: "haproxy"
+    comment: "haproxy user"
+    shell: "/bin/false"
+    system: "yes"
+    createhome: "yes"
+    home: "/var/lib/haproxy"
+  tags:
+    - haproxy-user
+
+- name: Stat haproxy log dir
+  stat:
+    path: "/var/log/haproxy"
+  register: log_dir
+  tags:
+    - haproxy-dirs
+    - haproxy-logs
+
+- name: Create haproxy log dir
+  file:
+    path: "/var/log/haproxy"
+    state: "{{ (log_dir.stat.islnk is defined and log_dir.stat.islnk) | ternary('link', 'directory') }}"
+    src: "{{ (log_dir.stat.islnk is defined and log_dir.stat.islnk) | ternary(log_dir.stat.lnk_source, omit) }}"
+    owner: haproxy
+    group: adm
+    mode: "0755"
+  tags:
+    - haproxy-dirs
+    - haproxy-logs
+
+- name: Change ownership of haproxy log dir link source
+  file:
+    path: "{{ log_dir.stat.lnk_source }}"
+    state: directory
+    owner: haproxy
+    group: adm
+    recurse: yes
+  when:
+    - log_dir.stat.islnk is defined
+    - log_dir.stat.islnk
+  tags:
+    - haproxy-dirs
+    - haproxy-logs
+
+- name: Remove conflicting distro packages
+  package:
+    name: "{{ haproxy_distro_packages_remove }}"
+    state: absent
+
+- name: Create haproxy conf.d dir
+  file:
+    path: "/etc/haproxy/conf.d"
+    state: directory
+    mode: "0755"
+
+- name: Remove old config files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ haproxy_remove_files }}"
+  when:
+    - ansible_pkg_mgr == 'apt'

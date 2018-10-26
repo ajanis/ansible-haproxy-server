@@ -1,0 +1,16 @@
+---
+
+- name: Store ssl cert
+  slurp:
+    src: "{{ haproxy_ssl_cert }}"
+  register: _haproxy_ssl_cert
+
+- name: Store ssl key
+  slurp:
+    src: "{{ haproxy_ssl_key }}"
+  register: _haproxy_ssl_key
+
+- name: Register a fact for the cert and key
+  set_fact:
+    haproxy_ssl_cert_fact: "{{ _haproxy_ssl_cert.content }}"
+    haproxy_ssl_key_fact: "{{ _haproxy_ssl_key.content }}"

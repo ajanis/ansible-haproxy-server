@@ -1,0 +1,10 @@
+---
+
+- include_tasks: haproxy_ssl_key_create.yml
+  when: inventory_hostname == ansible_play_hosts[0]
+
+- include_tasks: haproxy_ssl_key_store.yml
+  when: inventory_hostname == ansible_play_hosts[0]
+
+- include_tasks: haproxy_ssl_key_distribute.yml
+  when: inventory_hostname != ansible_play_hosts[0]
