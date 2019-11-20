@@ -6,8 +6,6 @@
     - "{{ ansible_distribution | lower }}.yml"
     - "{{ ansible_os_family | lower }}-{{ ansible_distribution_version.split('.')[0] }}.yml"
     - "{{ ansible_os_family | lower }}.yml"
-  tags:
-    - always
 
 - name: debug test - hostvars
   debug: var=hostvars[inventory_hostname]
